@@ -1,0 +1,20 @@
+{
+  "name": "mern-selenium-test",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "test:ui": "mocha tests/ui_functional.test.js --timeout 30000",
+    "test:api": "mocha tests/api.test.js --timeout 10000",
+    "test:db": "mocha tests/db.test.js --timeout 10000",
+    "test": "mocha tests/*.test.js --timeout 30000"
+  },
+  "devDependencies": {
+    "chai": "^4.3.0",
+    "chai-http": "^4.3.0",
+    "chromedriver": "^136.0.2",
+    "dotenv": "^16.5.0",
+    "mocha": "^10.0.0",
+    "mongoose": "^8.15.0",
+    "selenium-webdriver": "^4.0.0"
+  }
+}
