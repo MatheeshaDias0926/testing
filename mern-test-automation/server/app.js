@@ -12,6 +12,11 @@ app.use(express.json());
 // Routes
 app.use("/api", authRoutes);
 
+// Add a root endpoint for health check
+app.get("/", (req, res) => {
+  res.status(200).json({ message: "API is running" });
+});
+
 // Database connection
 const connectDB = async () => {
   try {

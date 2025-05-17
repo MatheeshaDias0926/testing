@@ -1,54 +1,80 @@
-const mongoose = require('mongoose');
-const User = require('../models/User');
+const mongoose = require("mongoose");
+// Fix: set strictQuery to suppress deprecation warning
+mongoose.set("strictQuery", true);
+const User = require("../models/User");
+const { MongoMemoryServer } = require("mongodb-memory-server");
 
-describe('Database Tests', () => {
-    beforeAll(async () => {
-        await mongoose.connect('mongodb://localhost:27017/testdb', {
-            useNewUrlParser: true,
-            useUnifiedTopology: true,
-        });
+describe("Database Tests", () => {
+  let mongoServer;
+
+  beforeAll(async () => {
+    mongoServer = await MongoMemoryServer.create();
+    await mongoose.connect(mongoServer.getUri());
+  });
+
+  afterAll(async () => {
+    await mongoose.disconnect();
+    await mongoServer.stop();
+  });
+
+  afterEach(async () => {
+    await User.deleteMany({});
+  });
+
+  test("DB-001: CRUD Operations", async () => {
+    // Create
+    const user = new User({
+      username: "testuser",
+      email: "test@example.com",
+      password: "password123",
     });
+    const savedUser = await user.save();
+    expect(savedUser._id).toBeDefined();
 
-    afterAll(async () => {
-        await mongoose.connection.close();
-    });
+    // Read
+    const foundUser = await User.findById(savedUser._id);
+    expect(foundUser.email).toBe("test@example.com");
 
-    it('should create and save a user successfully', async () => {
-        const userData = {
-            username: 'testuser',
-            password: 'testpassword',
-            email: 'testuser@example.com',
-        };
+    // Update
+    const updatedUser = await User.findByIdAndUpdate(
+      savedUser._id,
+      { username: "updateduser" },
+      { new: true }
+    );
+    expect(updatedUser.username).toBe("updateduser");
 
-        const user = new User(userData);
-        const savedUser = await user.save();
+    // Delete
+    await User.deleteOne({ _id: savedUser._id });
+    const deletedUser = await User.findById(savedUser._id);
+    expect(deletedUser).toBeNull();
+  });
 
-        expect(savedUser._id).toBeDefined();
-        expect(savedUser.username).toBe(userData.username);
-        expect(savedUser.email).toBe(userData.email);
-    });
+  test("DB-002: Schema Validation", async () => {
+    // Empty username
+    await expect(
+      User.create({
+        username: "",
+        email: "test@example.com",
+        password: "password123",
+      })
+    ).rejects.toThrow("User validation failed");
 
-    it('should retrieve a user by email', async () => {
-        const user = await User.findOne({ email: 'testuser@example.com' });
-        expect(user).toBeDefined();
-        expect(user.username).toBe('testuser');
-    });
+    // Invalid email
+    await expect(
+      User.create({
+        username: "testuser",
+        email: "invalid-email",
+        password: "password123",
+      })
+    ).rejects.toThrow("User validation failed");
 
-    it('should not save a user without an email', async () => {
-        const userData = {
-            username: 'invaliduser',
-            password: 'testpassword',
-        };
-
-        const user = new User(userData);
-        let error;
-        try {
-            await user.save();
-        } catch (err) {
-            error = err;
-        }
-
-        expect(error).toBeDefined();
-        expect(error.errors.email).toBeDefined();
-    });
+    // Short password
+    await expect(
+      User.create({
+        username: "testuser",
+        email: "test@example.com",
+        password: "123",
+      })
+    ).rejects.toThrow("User validation failed");
+  });
 });
