@@ -71,4 +71,36 @@ router.post("/login", async (req, res) => {
   }
 });
 
+// Update user
+router.put("/user/:id", async (req, res) => {
+  try {
+    const { username, email, password } = req.body;
+    const updateData = {};
+    if (username) updateData.username = username;
+    if (email) updateData.email = email;
+    if (password) {
+      const bcrypt = require("bcryptjs");
+      updateData.password = await bcrypt.hash(password, 10);
+    }
+    const user = await User.findByIdAndUpdate(req.params.id, updateData, {
+      new: true,
+    });
+    if (!user) return res.status(404).json({ message: "User not found" });
+    res.json({ message: "User updated", user });
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// Delete user
+router.delete("/user/:id", async (req, res) => {
+  try {
+    const user = await User.findByIdAndDelete(req.params.id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+    res.json({ message: "User deleted" });
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 module.exports = router;

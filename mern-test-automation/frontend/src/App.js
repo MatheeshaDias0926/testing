@@ -1,21 +1,43 @@
-import React, { useState } from "react";
+import React from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 import Login from "./components/Login";
 import Register from "./components/Register";
 import "./App.css";
 
 function App() {
-  const [isLogin, setIsLogin] = useState(true);
-
   return (
-    <div className="App">
-      <header className="App-header">
-        <h1>{isLogin ? "Login" : "Register"}</h1>
-        {isLogin ? <Login /> : <Register />}
-        <button onClick={() => setIsLogin(!isLogin)}>
-          {isLogin ? "Need to register?" : "Already have an account?"}
-        </button>
-      </header>
-    </div>
+    <Router>
+      <div className="App">
+        <header className="App-header">
+          <Routes>
+            <Route
+              path="/login"
+              element={
+                <>
+                  <h1>Login</h1>
+                  <Login />
+                </>
+              }
+            />
+            <Route
+              path="/register"
+              element={
+                <>
+                  <h1>Register</h1>
+                  <Register />
+                </>
+              }
+            />
+            <Route path="*" element={<Navigate to="/login" replace />} />
+          </Routes>
+        </header>
+      </div>
+    </Router>
   );
 }
 
