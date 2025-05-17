@@ -12,7 +12,13 @@ describe("Database Tests", () => {
         useNewUrlParser: true,
         useUnifiedTopology: true,
       });
-      console.log("Connected to MongoDB");
+      // Insert a user for the find test
+      await User.create({
+        username: "testuser",
+        email: "test@example.com",
+        password: "testpass123",
+      });
+      console.log("Connected to MongoDB and inserted test user");
     } catch (err) {
       console.error("MongoDB connection error:", err);
       throw err;
