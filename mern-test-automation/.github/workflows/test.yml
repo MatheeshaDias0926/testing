@@ -1,0 +1,51 @@
+name: Test Automation
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      mongodb:
+        image: mongo:latest
+        ports:
+          - 27017:27017
+        options: --health-cmd "mongo --eval 'db.runCommand(\"ping\").ok'" --health-interval 10s --health-timeout 5s --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: "16"
+
+      - name: Install dependencies
+        run: |
+          npm install -g concurrently
+          cd client && npm install
+          cd ../server && npm install
+          cd ../e2e && npm install
+
+      - name: Start services
+        run: |
+          cd server
+          npm run start:test &
+          cd ../client
+          npm start &
+          sleep 10
+
+      - name: Run API tests
+        run: cd server && npm test
+
+      - name: Run E2E tests
+        run: cd e2e && npm test
+        env:
+          CI: true
+
+      - name: Upload screenshots on failure
+        if: failure()
+        uses: actions/upload-artifact@v2
+        with:
+          name: test-screenshots
+          path: screenshots/
