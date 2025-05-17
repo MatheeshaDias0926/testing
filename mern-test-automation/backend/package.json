@@ -1,0 +1,31 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "test": "jest",
+    "test:functional": "jest tests/functional",
+    "test:api": "jest tests/api",
+    "test:db": "jest tests/database",
+    "test:perf": "jest tests/performance",
+    "test:ui": "python -m tests.selenium.auth_test"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.15.0"
+  },
+  "jest": {
+    "collectCoverage": true,
+    "coverageDirectory": "coverage",
+    "collectCoverageFrom": [
+      "backend/**/*.js",
+      "!backend/tests/**",
+      "!backend/node_modules/**"
+    ]
+  }
+}
