@@ -8,10 +8,7 @@ const expect = require("chai").expect;
 describe("Database Tests", () => {
   before(async () => {
     try {
-      await mongoose.connect(process.env.MONGO_URI, {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-      });
+      await mongoose.connect(process.env.MONGO_URI);
       // Insert a user for the find test
       await User.create({
         username: "testuser",
